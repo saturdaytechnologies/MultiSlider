@@ -5,6 +5,7 @@
 //  Created by Yonat Sharon on 21/06/2019.
 //
 
+import Foundation
 import UIKit
 
 extension MultiSlider {
@@ -195,7 +196,12 @@ extension MultiSlider {
         } else {
             labelValue = value[i]
         }
+      
+      if timeFormat {
+        valueLabels[i].text = Double(labelValue).asTimeValue()
+      } else {
         valueLabels[i].text = valueLabelFormatter.string(from: NSNumber(value: Double(labelValue)))
+      }
     }
 
     func updateAllValueLabels() {
@@ -283,4 +289,49 @@ extension MultiSlider {
         trackView.layer.cornerRadius = hasRoundTrackEnds ? trackWidth / 2 : 1
         outerTrackViews.forEach { $0.layer.cornerRadius = trackView.layer.cornerRadius }
     }
+}
+
+extension Double {
+  
+  /// Convert seconds value into the hour:minute:second format.
+  /// For example, 60 seconds will be represented as 1:00, 195 seconds as 3:15, and so on.
+  /// - Returns: A String representation of a seconds value.
+  func asTimeValue() -> String {
+    
+    // Split into fractional and integral parts
+    let (hr,  minf) = modf (self / 3600)
+    let (min, secf) = modf (60 * minf)
+    let sec = 60 * secf
+    
+    // Cast to string values
+    let str_hours = "\(Int(hr))"     // cast to int to drop `.0`
+    let str_minutes = "\(Int(min))"  // cast to int to drop `.0`
+    let str_seconds = "\(Int(sec))"  // cast to int to round downwards (avoid "2:60" when "2:59" is expected)
+    
+    // Construst human-readable time-value
+    var timeValue: String = ""
+    
+    if hr > 0 {
+      
+      timeValue += str_hours + ":"  // E.g.  01|:|0:0 -> 1 hour, 0 minutes, 0 seconds
+      //          -     => 01:0:0
+      if min < 10 {
+        timeValue += "0"            // E.g.  01:|0|0:0 -> 1 hour, 0 minutes, 0 seconds
+      }                             //           -     => 01:00:0
+      
+    }
+    
+    timeValue += str_minutes + ":"  // E.g.  01:0|4:|0 -> 1 hour, 4 minutes, 0 seconds
+    //            --   => 01:04:0
+    if sec < 10 {
+      timeValue += "0"              // E.g.  01:04:|0|0 -> 1 hour, 4 minutes, 0 seconds
+    }                               //              -   => 01:04:00
+    
+    timeValue += str_seconds        // E.g.  01:04:|5| -> 1 hour, 4 minutes, 5 seconds
+    //              -   => 01:04:05
+    
+    return timeValue
+    
+  }
+  
 }
