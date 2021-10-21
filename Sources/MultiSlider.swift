@@ -179,6 +179,10 @@ open class MultiSlider: UIControl {
             }
         }
     }
+  
+  @objc open dynamic var timeFormat: Bool = {
+    return false
+  }()
 
     @objc open dynamic var valueLabelFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
